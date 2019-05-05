@@ -21,7 +21,7 @@ function router() {
             }
         })
         .get((req, res) => {
-            res.json(req.user);
+            res.json(req.user.interests);
         });
 
     userRouter.route('/login')
@@ -32,8 +32,24 @@ function router() {
         }));
 
     userRouter.route('/signup')
-        .get((req, res) => {
-            res.send('This is a dummy Sign up page');
+        .post((req, res) => {
+            //const { username, password } = req.body;
+            console.log(req.body);
+            
+            const url = process.env.MONGO_URL;
+            const dbName = process.env.MONGO_DB_NAME;
+
+            (async function mongo() {
+                let client;
+                client = await MongoClient.connect(url);
+                const db = client.db(dbName);
+                const col = await db.collection('users');
+
+                //const user = { username, password };
+
+                const result = await col.insertOne(req.body);
+                res.send(result.ops[0]);
+            }());
         });
     return userRouter;
 };
